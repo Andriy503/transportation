@@ -1,0 +1,107 @@
+body {
+    background-image: url("assets/bc.jpg");
+}
+
+#table {
+    color: white;
+}
+
+.columns > th {
+    font-size: 18px;
+    color: #eda200;
+}
+
+.add_new {
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 15px;
+}
+
+.add_new:hover {
+    cursor: pointer;
+    background-color: #57d11b;
+}
+
+/* css modal window */
+.modal {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.1);
+    transition: visibility 0s linear 0.25s, opacity 0.25s 0s, transform 0.25s;
+}
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 1rem 1.5rem;
+    /* width: 24rem; */
+    border-radius: 0.5rem;
+}
+.close-button {
+    float: right;
+    width: 1.5rem;
+    line-height: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    background-color: lightgray;
+}
+.close-button:hover {
+    background-color: darkgray;
+}
+.show-modal {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1.0);
+    transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}
+/* end modal window */
+#actionTd {
+    padding: 10px;
+}
+
+#actionTd > img:hover {
+    cursor: pointer;
+}
+
+#form > label {
+    margin-right: 20px;
+    font-size: 20px;
+    color: #eab002;
+}
+
+#form > select, input {
+    height: 30px;
+    width: 250px;
+    font-size: 15px;
+    margin-top: 10px;
+}
+
+#btnForm {
+    margin-top: 20px;
+    padding: 10px;
+    border: none;
+    background-color: #4CAF4F;
+    color: white;
+    font-size: 15px;
+    float: right
+}
+
+#btnForm:hover {
+    background-color: #35cc37;
+    cursor: pointer;
+}

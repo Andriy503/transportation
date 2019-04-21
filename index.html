@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Transportation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="wrapper">
+        <button class="add_new" onclick="addTransportation()">Add new transportation</button>
+        <table border="1" width="100%" cellpadding="5" id="table">
+            <tr class="columns">
+                <th>Brand auto</th>
+                <th>Model Auto</th>
+                <th>Max weight</th>
+                <th>Driver name</th>
+                <th>Driver surname</th>
+                <th>Customer name</th>
+                <th>Customer surname</th>
+                <th>Transportation from</th>
+                <th>Transportation to</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </table>
+
+        <!-- modal window -->
+        <div class="modal">
+            <div class="modal-content">
+                <span class="close-button" onclick="toggleModal(true)">&times;</span>
+                <h1 id="title"></h1>
+                <div id="form"></div>
+            </div>
+        </div>
+        <!-- end modal -->
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
