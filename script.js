@@ -5,13 +5,12 @@ var drivers = [];
 var customers = [];
 var modal = document.querySelector(".modal");
 var elForm = document.getElementById('form');
-var isAdd = true;
 var form = {
-    idAuto: false,
-    idDriver: false,
-    idCustomer: false,
-    inpFrom: '',
-    inpTo: '',
+    id_auto: false,
+    id_driver: false,
+    id_customer: false,
+    transportation_from: '',
+    transportation_to: '',
     price: 0
 };
 
@@ -95,11 +94,9 @@ function createNewRecords () {
             actImg.width = 20;
             actImg.title = name;
             if (name === 'edit') { actImg.style = 'margin-right: 5px;'; };
-            actImg.addEventListener('click', () => callback(transportation.id));
+            actImg.addEventListener('click', () => callback(transportation.t_id));
             actionTd.appendChild(actImg);
         };
-
-        // console.log(transportation)
         
         img(editTransportation, 'edit')
         img(deleteTransportation, 'delete')
@@ -133,18 +130,18 @@ function addTransportation () {
 }
 
 function editTransportation (id) {
-    console.log(id)
-    // createFormElements(false);
-    // toggleModal();
+    let activeTransportation = transportations.filter(i => i.t_id === id)[0] || false;
+    createFormElements(activeTransportation);
+    toggleModal();
 }
 
 function deleteTransportation () {
     console.log('click delete')
 }
 
-function createFormElements (isAdd = true) {
+function createFormElements (activeTransportation = false) {
     let formTitle = document.getElementById('title');
-    formTitle.innerText = (isAdd ? 'Add' : 'Edit') + ' Transportation';
+    formTitle.innerText = (!activeTransportation ? 'Add' : 'Edit') + ' Transportation';
 
     let br = () => { elForm.appendChild(document.createElement('br')) };
 
@@ -154,9 +151,9 @@ function createFormElements (isAdd = true) {
         elForm.appendChild(labelSelectAuto);
     };
 
-    let select = (array, fields) => {
+    let select = (array, fields, idTable) => {
         let selectForm = document.createElement('select');
-        selectForm.addEventListener('change', () => selectItem(fields[2], event));
+        selectForm.addEventListener('change', () => selectItem(idTable, event));
         elForm.appendChild(selectForm);
 
         let emptyOption = document.createElement("option");
@@ -168,43 +165,50 @@ function createFormElements (isAdd = true) {
 
             option.text = array[i][fields[0]] + ' ' + array[i][fields[1]];
             option.value = array[i].id;
+
+            if (activeTransportation && activeTransportation[idTable] === array[i].id) {
+                option.selected = true;
+            }
             
             selectForm.appendChild(option);
         }
     };
 
-    let input = (idName) => {
+    let input = (idTable) => {
         let inputForm = document.createElement('input');
-        inputForm.id = idName;
+        inputForm.id = idTable;
+        if (activeTransportation && activeTransportation[idTable]) {
+            inputForm.value = activeTransportation[idTable];
+        }
         elForm.appendChild(inputForm)
     };
 
     let btn = () => {
         let btnForm = document.createElement('button');
-        btnForm.innerText = isAdd ? 'Add record' : 'Edit record';
+        btnForm.innerText = !activeTransportation ? 'Add record' : 'Edit record';
         btnForm.id = 'btnForm';
-        btnForm.addEventListener('click', isAdd ? saveTransportation : updateTransportation);
+        btnForm.addEventListener('click', !activeTransportation ? saveTransportation : updateTransportation);
         elForm.appendChild(btnForm);
     };
 
     label('Select auto: ');
-    select(auto, ['brand', 'model', 'idAuto']);
+    select(auto, ['brand', 'model'], 'id_auto');
 
     br();
     label('Select driver: ');
-    select(drivers, ['first_name', 'last_name', 'idDriver']);
+    select(drivers, ['first_name', 'last_name'], 'id_driver');
 
     br();
     label('Select customer: ');
-    select(customers, ['c_first_name', 'c_last_name', 'idCustomer']);
+    select(customers, ['c_first_name', 'c_last_name'], 'id_customer');
 
     br();
     label('Transportation from: ');
-    input('inpFrom');
+    input('transportation_from');
 
     br();
     label('Transportation to: ');
-    input('inpTo');
+    input('transportation_to');
     
     br();
     label('Price: ');
@@ -223,7 +227,9 @@ function saveTransportation () {
 }
 
 function updateTransportation () {
-    getFormData();
+    console.log(form)
+    // потрібно доробити щоб при редагуванні дані зберігались в обєкті form
+    // getFormData();
 }
 
 function getFormData () {
@@ -258,11 +264,11 @@ function resetForm () {
 
 function validFormMessage (field, code = 0) {
     let naturalField = {
-        'idAuto': 'auto',
-        'idCustomer': 'customer',
-        'idDriver': 'driver',
-        'inpFrom': 'transportation_from',
-        'inpTo': 'transportation_to',
+        'id_auto': 'auto',
+        'id_customer': 'customer',
+        'id_driver': 'driver',
+        'transportation_from': 'transportation_from',
+        'transportation_to': 'transportation_to',
         'price': 'price'
     };
 
