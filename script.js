@@ -56,7 +56,45 @@ function getXmlHttp () {
 }
 
 function createNewRecords () {
+    if (!transportations.length) {
+        let h1 = document.createElement('h1');
+        h1.id = 'table_nothing';
+        h1.innerText = 'Nothing here...';
+
+        let img = document.createElement('img');
+        img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Sad_smiley_yellow_simple.svg/600px-Sad_smiley_yellow_simple.svg.png';
+        img.width = 300;
+        img.id = 'img_nothing';
+
+        document.body.appendChild(h1);
+        document.body.appendChild(img);
+        return;
+    }
+
     var table = document.getElementById('table');
+    let tr = document.createElement('tr');
+
+    tr.className = 'columns';
+    table.appendChild(tr);
+
+    $thFields = [
+        'Brand auto',
+        'Model Auto',
+        'Max weight',
+        'Driver name',
+        'Driver surname',
+        'Customer name',
+        'Customer surname',
+        'Transportation from',
+        'Transportation to',
+        'Price',
+        'Actions'
+    ];
+    $thFields.forEach(i => {
+        let th = document.createElement('th');
+        th.innerText = i;
+        tr.appendChild(th);
+    })
 
     var createNewColumn = (columnInfo, el) => {
         let newTd = document.createElement('td');
@@ -110,7 +148,7 @@ function toggleModal (isClose=false) {
 
     if (isClose) {
         setTimeout(() => {
-            resetForm()
+            resetDomElements(elForm)
         }, 200);
     }
 }
@@ -135,10 +173,6 @@ function editTransportation (id) {
     toggleModal();
 }
 
-function deleteTransportation () {
-    console.log('click delete')
-}
-
 function createFormElements (activeTransportation = false) {
     let formTitle = document.getElementById('title');
     formTitle.innerText = (!activeTransportation ? 'Add' : 'Edit') + ' Transportation';
@@ -153,6 +187,7 @@ function createFormElements (activeTransportation = false) {
 
     let select = (array, fields, idTable) => {
         let selectForm = document.createElement('select');
+        selectForm.id = idTable;
         selectForm.addEventListener('change', () => selectItem(idTable, event));
         elForm.appendChild(selectForm);
 
@@ -218,47 +253,87 @@ function createFormElements (activeTransportation = false) {
     btn();
 }
 
-function selectItem (item, e) {
-    form[item] = parseInt(e.target.options[e.target.selectedIndex].value) || false;
+function selectItem (item, e, isAdd = true) {
+    form[item] = isAdd
+        ? parseInt(e.target.options[e.target.selectedIndex].value) || false
+        : parseInt(e.options[e.selectedIndex].value) || false;
 }
 
 function saveTransportation () {
-    getFormData();
+    if (getFormData()) {
+        xhr.open('POST', 'http://api_autosalon/', true);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                let res = JSON.parse(xhr.response);
+                if (res.success) {
+                    transportations.push(res.transtortation)
+
+                    resetDomElements(document.getElementById('table'));
+                    createNewRecords()
+
+                    alert(res.message)
+                } else {
+                    alert(res.message)
+                }
+            } else {
+                console.log('Server Error')
+            }
+        };
+        
+        var formData = new FormData();
+
+        for (item in form) {
+            formData.append(item, form[item]);
+        }
+        
+        xhr.send(formData);
+    }
 }
 
 function updateTransportation () {
-    console.log(form)
-    // потрібно доробити щоб при редагуванні дані зберігались в обєкті form
-    // getFormData();
+    if (getFormData()) {
+        console.log('edit')
+    }   
+}
+
+function deleteTransportation () {
+    console.log('click delete')
 }
 
 function getFormData () {
-    form.inpFrom = document.getElementById('inpFrom').value;
-    form.inpTo = document.getElementById('inpTo').value;
+    selectItem('id_auto', document.getElementById('id_auto'), false);
+    selectItem('id_customer', document.getElementById('id_customer'), false);
+    selectItem('id_driver', document.getElementById('id_driver'), false);
+
+    form.transportation_from = document.getElementById('transportation_from').value;
+    form.transportation_to = document.getElementById('transportation_to').value;
     form.price = document.getElementById('price').value || 0;
 
     for (item in form) {
         if (!form[item]) {
-            if (~['idAuto', 'idCustomer', 'idDriver'].indexOf(item)) {
+            if (~['id_auto', 'id_customer', 'id_driver'].indexOf(item)) {
                 alert(validFormMessage(item, 0));
-                return;
-            } else if (~['inpFrom', 'inpTo'].indexOf(item)) {
+                return false;
+            } else if (~['transportation_from', 'transportation_to'].indexOf(item)) {
                 alert(validFormMessage(item, 1));
-                return;
+                return false;
             } else if (item === 'price') {
                 alert(validFormMessage(item, 1));
-                return;
+                return false;
             }
         } else if (item === 'price' && isNaN(form[item])) {
             alert(validFormMessage(item, 2));
-            return;
+            return false;
         }
     }
+
+    return true;
 }
 
-function resetForm () {
-    while (elForm.firstChild) {
-        elForm.removeChild(elForm.firstChild);
+function resetDomElements (el) {
+    // need reset playcholder nothing here...
+    while (el.firstChild) {
+        el.removeChild(el.firstChild);
     }
 }
 
