@@ -57,17 +57,22 @@ function getXmlHttp () {
 
 function createNewRecords () {
     if (!transportations.length) {
+        let div = document.createElement('div');
+        div.id = 'ttt';
+        document.body.appendChild(div);
+
         let h1 = document.createElement('h1');
         h1.id = 'table_nothing';
         h1.innerText = 'Nothing here...';
 
         let img = document.createElement('img');
-        img.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Sad_smiley_yellow_simple.svg/600px-Sad_smiley_yellow_simple.svg.png';
+        img.src = 'assets/placholder.png';
         img.width = 300;
         img.id = 'img_nothing';
 
-        document.body.appendChild(h1);
-        document.body.appendChild(img);
+        div.appendChild(h1);
+        div.appendChild(img);
+
         return;
     }
 
@@ -269,14 +274,21 @@ function saveTransportation () {
                     transportations.push(res.transtortation)
 
                     resetDomElements(document.getElementById('table'));
+                    let divPlaycholder = document.getElementById('ttt');
+
+                    if (divPlaycholder) {
+                        // delete placholder
+                        resetDomElements(divPlaycholder);
+                    }
+
+                    // create recode
                     createNewRecords()
 
-                    alert(res.message)
+                    // close modal
+                    toggleModal(true);
                 } else {
                     alert(res.message)
                 }
-            } else {
-                console.log('Server Error')
             }
         };
         
@@ -292,8 +304,79 @@ function saveTransportation () {
 
 function updateTransportation () {
     if (getFormData()) {
-        console.log('edit')
-    }   
+
+        if (window.XMLHttpRequest) {
+            try {
+                req = new XMLHttpRequest();
+            } catch (e){}
+        } else if (window.ActiveXObject) {
+            try {
+                req = new ActiveXObject('Msxml2.XMLHTTP');
+            } catch (e){
+                try {
+                    req = new ActiveXObject('Microsoft.XMLHTTP');
+                } catch (e){}
+            }
+        }
+
+        req.open("PUT", 'http://api_autosalon/', true);
+        // req.setRequestHeader('Content-type','application/json; charset=utf-8');
+        // req.setRequestHeader('Access-Control-Allow-Origin', '*');
+        // req.setRequestHeader("Access-Control-Allow-Methods", "*");
+
+    
+        // req.withCredentials = true;
+        req.onload = () => {
+            console.log('success')
+            // if (req.readyState == 4 && req.status == 200) {
+            //     let res = JSON.parse(req.response);
+            // }
+        }
+        var json = JSON.stringify([]);
+        req.send(json);
+        return 
+
+
+
+        xhr.open('PUT', 'http://api_autosalon/', true);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                let res = JSON.parse(xhr.response);
+                console.log(res)
+                // if (res.success) {
+                //     transportations.push(res.transtortation)
+
+                //     resetDomElements(document.getElementById('table'));
+                //     let divPlaycholder = document.getElementById('ttt');
+
+                //     if (divPlaycholder) {
+                //         // delete placholder
+                //         resetDomElements(divPlaycholder);
+                //     }
+
+                //     // create recode
+                //     createNewRecords()
+
+                //     // show message
+                //     alert(res.message)
+
+                //     // close modal
+                //     toggleModal(true);
+                // } else {
+                //     alert(res.message)
+                // }
+            }
+        };
+        
+        // var formData = new FormData();
+
+        // for (item in form) {
+        //     formData.append(item, form[item]);
+        // }
+        
+        // xhr.send(formData);
+        xhr.send();
+    }  
 }
 
 function deleteTransportation () {
