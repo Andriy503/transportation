@@ -11,7 +11,9 @@ var form = {
     id_customer: false,
     transportation_from: '',
     transportation_to: '',
-    price: 0
+    price: 0,
+    departure_date: '',
+    date_of_arrival: ''
 };
 
 String.prototype.firstToUpperCase = function() {
@@ -58,7 +60,7 @@ function getXmlHttp () {
 function createNewRecords () {
     if (!transportations.length) {
         let div = document.createElement('div');
-        div.id = 'ttt';
+        div.id = 'divPlaceholder';
         document.body.appendChild(div);
 
         let h1 = document.createElement('h1');
@@ -93,6 +95,8 @@ function createNewRecords () {
         'Transportation from',
         'Transportation to',
         'Price',
+        'Departure date',
+        'Date of arrival date',
         'Actions'
     ];
     $thFields.forEach(i => {
@@ -120,7 +124,9 @@ function createNewRecords () {
             'c_last_name',
             'transportation_from',
             'transportation_to',
-            'price'
+            'price',
+            'departure_date',
+            'date_of_arrival'
         ];
 
         fields.forEach(i => {
@@ -231,6 +237,13 @@ function createFormElements (activeTransportation = false) {
         elForm.appendChild(btnForm);
     };
 
+    let datePicker = (id) => {
+        let datePickerDeparture = document.createElement('input');
+        datePickerDeparture.type = 'datetime-local';
+        datePickerDeparture.id = id;
+        elForm.appendChild(datePickerDeparture);
+    };
+
     label('Select auto: ');
     select(auto, ['brand', 'model'], 'id_auto');
 
@@ -254,6 +267,15 @@ function createFormElements (activeTransportation = false) {
     label('Price: ');
     input('price');
 
+    // create date picker
+    br();
+    label('Departure date: ');
+    datePicker('date1');
+
+    br();
+    label('Date of arrival: ');
+    datePicker('date2'); 
+
     br();
     btn();
 }
@@ -265,6 +287,8 @@ function selectItem (item, e, isAdd = true) {
 }
 
 function saveTransportation () {
+    if (!chekedCorrectDate()) { return false; }
+
     if (getFormData()) {
         xhr.open('POST', 'http://api_autosalon/', true);
         xhr.onreadystatechange = () => {
@@ -274,7 +298,7 @@ function saveTransportation () {
                     transportations.push(res.transtortation)
 
                     resetDomElements(document.getElementById('table'));
-                    let divPlaycholder = document.getElementById('ttt');
+                    let divPlaycholder = document.getElementById('divPlaceholder');
 
                     if (divPlaycholder) {
                         // delete placholder
@@ -304,40 +328,6 @@ function saveTransportation () {
 
 function updateTransportation () {
     if (getFormData()) {
-
-        if (window.XMLHttpRequest) {
-            try {
-                req = new XMLHttpRequest();
-            } catch (e){}
-        } else if (window.ActiveXObject) {
-            try {
-                req = new ActiveXObject('Msxml2.XMLHTTP');
-            } catch (e){
-                try {
-                    req = new ActiveXObject('Microsoft.XMLHTTP');
-                } catch (e){}
-            }
-        }
-
-        req.open("PUT", 'http://api_autosalon/', true);
-        // req.setRequestHeader('Content-type','application/json; charset=utf-8');
-        // req.setRequestHeader('Access-Control-Allow-Origin', '*');
-        // req.setRequestHeader("Access-Control-Allow-Methods", "*");
-
-    
-        // req.withCredentials = true;
-        req.onload = () => {
-            console.log('success')
-            // if (req.readyState == 4 && req.status == 200) {
-            //     let res = JSON.parse(req.response);
-            // }
-        }
-        var json = JSON.stringify([]);
-        req.send(json);
-        return 
-
-
-
         xhr.open('PUT', 'http://api_autosalon/', true);
         xhr.onreadystatechange = () => {
             if (xhr.readyState == 4 && xhr.status == 200) {
@@ -347,7 +337,7 @@ function updateTransportation () {
                 //     transportations.push(res.transtortation)
 
                 //     resetDomElements(document.getElementById('table'));
-                //     let divPlaycholder = document.getElementById('ttt');
+                //     let divPlaycholder = document.getElementById('divPlaceholder');
 
                 //     if (divPlaycholder) {
                 //         // delete placholder
@@ -357,8 +347,43 @@ function updateTransportation () {
                 //     // create recode
                 //     createNewRecords()
 
-                //     // show message
+                //     // close modal
+                //     toggleModal(true);
+                // } else {
                 //     alert(res.message)
+                // }
+            }
+        };
+        
+        var formData = new FormData();
+
+        for (item in form) {
+            formData.append(item, form[item]);
+        }
+        
+        xhr.send(formData);
+    }
+}
+
+function deleteTransportation () {
+        xhr.open('DELETE', 'http://api_autosalon/', true);
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                let res = JSON.parse(xhr.response);
+                // console.log(res)
+                // if (res.success) {
+                //     transportations.push(res.transtortation)
+
+                //     resetDomElements(document.getElementById('table'));
+                //     let divPlaycholder = document.getElementById('divPlaceholder');
+
+                //     if (divPlaycholder) {
+                //         // delete placholder
+                //         resetDomElements(divPlaycholder);
+                //     }
+
+                //     // create recode
+                //     createNewRecords()
 
                 //     // close modal
                 //     toggleModal(true);
@@ -373,14 +398,10 @@ function updateTransportation () {
         // for (item in form) {
         //     formData.append(item, form[item]);
         // }
+
+        // console.log(formData)
         
         // xhr.send(formData);
-        xhr.send();
-    }  
-}
-
-function deleteTransportation () {
-    console.log('click delete')
 }
 
 function getFormData () {
@@ -437,6 +458,21 @@ function validFormMessage (field, code = 0) {
     };
 
     return codeError[code];
+}
+
+function chekedCorrectDate () {
+    let date1 = document.getElementById('date1');
+    let date2 = document.getElementById('date2');
+
+    if (!date1.value || !date2.value) {
+        alert('Please enter a valid date')
+        return false;
+    }
+
+    form.departure_date = date1.value;
+    form.date_of_arrival = date2.value;
+
+    return true;
 }
 
 startApp();
