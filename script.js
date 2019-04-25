@@ -233,13 +233,16 @@ function createFormElements (activeTransportation = false) {
         let btnForm = document.createElement('button');
         btnForm.innerText = !activeTransportation ? 'Add record' : 'Edit record';
         btnForm.id = 'btnForm';
-        btnForm.addEventListener('click', !activeTransportation ? saveTransportation : updateTransportation);
+        btnForm.addEventListener('click', !activeTransportation ? saveTransportation : updateTransportation.bind(null, activeTransportation));
         elForm.appendChild(btnForm);
     };
 
-    let datePicker = (id) => {
+    let datePicker = (id, value) => {
         let datePickerDeparture = document.createElement('input');
         datePickerDeparture.type = 'datetime-local';
+
+        datePickerDeparture.value = value.split(' ').join('T');
+
         datePickerDeparture.id = id;
         elForm.appendChild(datePickerDeparture);
     };
@@ -270,11 +273,11 @@ function createFormElements (activeTransportation = false) {
     // create date picker
     br();
     label('Departure date: ');
-    datePicker('date1');
+    datePicker('date1', activeTransportation.departure_date || '');
 
     br();
     label('Date of arrival: ');
-    datePicker('date2'); 
+    datePicker('date2', activeTransportation.date_of_arrival || ''); 
 
     br();
     btn();
@@ -310,6 +313,7 @@ function saveTransportation () {
 
                     // close modal
                     toggleModal(true);
+                    showValidMessage('New record added', 'success');
                 } else {
                     alert(res.message)
                 }
@@ -326,82 +330,38 @@ function saveTransportation () {
     }
 }
 
-function updateTransportation () {
+function updateTransportation (activeTransportation) {
+    if (!chekedCorrectDate()) { return false; }
+
     if (getFormData()) {
-        xhr.open('PUT', 'http://api_autosalon/', true);
+        xhr.open('PUT', 'http://api_autosalon/?id='+activeTransportation.t_id, true);
         xhr.onreadystatechange = () => {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 let res = JSON.parse(xhr.response);
-                console.log(res)
-                // if (res.success) {
-                //     transportations.push(res.transtortation)
-
-                //     resetDomElements(document.getElementById('table'));
-                //     let divPlaycholder = document.getElementById('divPlaceholder');
-
-                //     if (divPlaycholder) {
-                //         // delete placholder
-                //         resetDomElements(divPlaycholder);
-                //     }
-
-                //     // create recode
-                //     createNewRecords()
-
-                //     // close modal
-                //     toggleModal(true);
-                // } else {
-                //     alert(res.message)
-                // }
+                
+                if (res.success) {
+                    location.reload()
+                }
             }
         };
-        
-        var formData = new FormData();
 
-        for (item in form) {
-            formData.append(item, form[item]);
-        }
-        
-        xhr.send(formData);
+        xhr.send(JSON.stringify(form));
     }
 }
 
-function deleteTransportation () {
-        xhr.open('DELETE', 'http://api_autosalon/', true);
+function deleteTransportation (id) {
+        xhr.open('DELETE', 'http://api_autosalon?id='+id, true);
         xhr.onreadystatechange = () => {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 let res = JSON.parse(xhr.response);
-                // console.log(res)
-                // if (res.success) {
-                //     transportations.push(res.transtortation)
 
-                //     resetDomElements(document.getElementById('table'));
-                //     let divPlaycholder = document.getElementById('divPlaceholder');
-
-                //     if (divPlaycholder) {
-                //         // delete placholder
-                //         resetDomElements(divPlaycholder);
-                //     }
-
-                //     // create recode
-                //     createNewRecords()
-
-                //     // close modal
-                //     toggleModal(true);
-                // } else {
-                //     alert(res.message)
-                // }
+                if (res.success) {
+                    location.reload();
+                }
             }
         };
         
-        // var formData = new FormData();
-
-        // for (item in form) {
-        //     formData.append(item, form[item]);
-        // }
-
-        // console.log(formData)
-        
-        // xhr.send(formData);
+        xhr.send();
 }
 
 function getFormData () {
@@ -416,17 +376,17 @@ function getFormData () {
     for (item in form) {
         if (!form[item]) {
             if (~['id_auto', 'id_customer', 'id_driver'].indexOf(item)) {
-                alert(validFormMessage(item, 0));
+                showValidMessage(validFormMessage(item, 0));
                 return false;
             } else if (~['transportation_from', 'transportation_to'].indexOf(item)) {
-                alert(validFormMessage(item, 1));
+                showValidMessage(validFormMessage(item, 1));
                 return false;
             } else if (item === 'price') {
-                alert(validFormMessage(item, 1));
+                showValidMessage(validFormMessage(item, 1));
                 return false;
             }
         } else if (item === 'price' && isNaN(form[item])) {
-            alert(validFormMessage(item, 2));
+            showValidMessage(validFormMessage(item, 2));
             return false;
         }
     }
@@ -446,8 +406,8 @@ function validFormMessage (field, code = 0) {
         'id_auto': 'auto',
         'id_customer': 'customer',
         'id_driver': 'driver',
-        'transportation_from': 'transportation_from',
-        'transportation_to': 'transportation_to',
+        'transportation_from': 'Transportation from',
+        'transportation_to': 'Transportation to',
         'price': 'price'
     };
 
@@ -465,7 +425,7 @@ function chekedCorrectDate () {
     let date2 = document.getElementById('date2');
 
     if (!date1.value || !date2.value) {
-        alert('Please enter a valid date')
+        showValidMessage('Please enter a valid date');
         return false;
     }
 
@@ -474,5 +434,12 @@ function chekedCorrectDate () {
 
     return true;
 }
+
+var showValidMessage = (message, type = 'danger') => {
+    new Toast({
+        message: message,
+        type: type
+    });
+};
 
 startApp();
