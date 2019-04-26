@@ -117,3 +117,24 @@ body {
     margin-left: auto;
     margin-right: auto;
 }
+
+#ulNumberPaginations {
+    list-style-type: none;
+    float: right;
+    margin-right: 20px;
+}
+
+#ulNumberPaginations  > li {
+    color: white;
+    float: left;
+    margin-left: 10px;
+}
+
+#ulNumberPaginations  > li:hover {
+    cursor: pointer;
+    color: #1de5b6;
+}
+
+#pagActive {
+    color: #1de5b6 !important;
+}

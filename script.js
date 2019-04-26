@@ -15,15 +15,17 @@ var form = {
     departure_date: '',
     date_of_arrival: ''
 };
+var limit = 5;
+var offset = 0;
 
 String.prototype.firstToUpperCase = function() {
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
 }
 
-function startApp () {
+function startApp (isDrowPaginations = true) {
     getXmlHttp();
-
-    xhr.open('GET', 'http://api_autosalon/', true);
+    let getParams = '?limit=' + limit + '&offset=' + offset;
+    xhr.open('GET', 'http://api_autosalon' + getParams, true);
     xhr.onreadystatechange = () => {
         if (xhr.readyState == 4 && xhr.status == 200) {
             let res = JSON.parse(xhr.response);
@@ -34,6 +36,7 @@ function startApp () {
             customers = res.customers;
 
             createNewRecords();
+            if (isDrowPaginations) { createPaginations(res.count); }
         }
     };
     xhr.send();
@@ -298,22 +301,23 @@ function saveTransportation () {
             if (xhr.readyState == 4 && xhr.status == 200) {
                 let res = JSON.parse(xhr.response);
                 if (res.success) {
-                    transportations.push(res.transtortation)
+                    location.reload()
+                    // transportations.push(res.transtortation)
 
-                    resetDomElements(document.getElementById('table'));
-                    let divPlaycholder = document.getElementById('divPlaceholder');
+                    // resetDomElements(document.getElementById('table'));
+                    // let divPlaycholder = document.getElementById('divPlaceholder');
 
-                    if (divPlaycholder) {
-                        // delete placholder
-                        resetDomElements(divPlaycholder);
-                    }
+                    // if (divPlaycholder) {
+                    //     // delete placholder
+                    //     resetDomElements(divPlaycholder);
+                    // }
 
-                    // create recode
-                    createNewRecords()
+                    // // create recode
+                    // createNewRecords()
 
-                    // close modal
-                    toggleModal(true);
-                    showValidMessage('New record added', 'success');
+                    // // close modal
+                    // toggleModal(true);
+                    // showValidMessage('New record added', 'success');
                 } else {
                     alert(res.message)
                 }
@@ -441,5 +445,49 @@ var showValidMessage = (message, type = 'danger') => {
         type: type
     });
 };
+
+function createPaginations (allCountTransportations) {
+    if (allCountTransportations) {
+        let wrapper = document.getElementById('wrapper');
+        let ul = document.createElement('ul');
+        ul.id = 'ulNumberPaginations';
+        wrapper.appendChild(ul);
+
+        let iteration = Math.ceil(allCountTransportations / limit);
+        for (let i = 0; i < iteration; i++) {
+            let li = document.createElement('li');
+            if (i === 0) {
+                li.id = 'pagActive';
+            }
+
+            let newOffset = i * limit;
+            li.addEventListener('click', test.bind(null, newOffset, li));
+
+            li.innerText = 1 + i;
+
+            ul.appendChild(li);
+        }
+    }
+}
+
+function test(newOffset, el) {
+    offset = newOffset
+    
+    replacementNumberPaginations(el);
+    resetDomElements(document.getElementById('table'));
+    startApp(false);
+}
+
+function replacementNumberPaginations(el) {
+    let liPaginations = document.getElementById('ulNumberPaginations').getElementsByTagName("li");
+
+    for (let i = 0; i < liPaginations.length; i++) {
+        if (liPaginations[i].id) {
+            liPaginations[i].setAttribute('id', '');
+        }
+    }
+
+    el.id = 'pagActive';
+}
 
 startApp();
