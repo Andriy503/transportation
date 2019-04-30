@@ -15,8 +15,14 @@ var form = {
     departure_date: '',
     date_of_arrival: ''
 };
-var limit = 5;
+var limit = 8;
 var offset = 0;
+var sort = 'ASC';
+let uniCodeIconSort = '\u2191';
+let searchData = {
+    field: '',
+    searchText: ''
+};
 
 String.prototype.firstToUpperCase = function() {
     return this.charAt(0).toUpperCase() + this.slice(1).toLowerCase();
@@ -24,7 +30,19 @@ String.prototype.firstToUpperCase = function() {
 
 function startApp (isDrowPaginations = true) {
     getXmlHttp();
-    let getParams = '?limit=' + limit + '&offset=' + offset;
+    let getParams = '?limit=' + limit + '&offset=' + offset + '&sort=' + sort;
+    let isFilter = true;
+    
+    for (item in searchData) {
+        if (!searchData[item]) {
+            isFilter = false;
+        }
+    }
+
+    if (isFilter) {
+        getParams += '&filter[field]=' + searchData.field + '&filter[value]=' + searchData.searchText;
+    }
+    
     xhr.open('GET', 'http://api_autosalon' + getParams, true);
     xhr.onreadystatechange = () => {
         if (xhr.readyState == 4 && xhr.status == 200) {
@@ -62,6 +80,10 @@ function getXmlHttp () {
 
 function createNewRecords () {
     if (!transportations.length) {
+        if (document.getElementById('divPlaceholder')) {
+            return;
+        }
+        
         let div = document.createElement('div');
         div.id = 'divPlaceholder';
         document.body.appendChild(div);
@@ -81,13 +103,18 @@ function createNewRecords () {
         return;
     }
 
+    // delete placholder
+    if (document.getElementById('divPlaceholder')) {
+        document.getElementById('divPlaceholder').remove();
+    }
+
     var table = document.getElementById('table');
     let tr = document.createElement('tr');
 
     tr.className = 'columns';
     table.appendChild(tr);
 
-    $thFields = [
+    let thFields = [
         'Brand auto',
         'Model Auto',
         'Max weight',
@@ -102,11 +129,17 @@ function createNewRecords () {
         'Date of arrival date',
         'Actions'
     ];
-    $thFields.forEach(i => {
+    thFields.forEach(i => {
         let th = document.createElement('th');
+        if (i === 'Price') {
+            i += uniCodeIconSort;
+            th.id = 'priceTh';
+            th.addEventListener('click', sorting);
+        }
+
         th.innerText = i;
         tr.appendChild(th);
-    })
+    });
 
     var createNewColumn = (columnInfo, el) => {
         let newTd = document.createElement('td');
@@ -242,7 +275,20 @@ function createFormElements (activeTransportation = false) {
 
     let datePicker = (id, value) => {
         let datePickerDeparture = document.createElement('input');
-        datePickerDeparture.type = 'datetime-local';
+        datePickerDeparture.type = 'date';
+
+        var dtToday = new Date();
+        
+        var month = dtToday.getMonth() + 1;
+        var day = dtToday.getDate();
+        var year = dtToday.getFullYear();
+        
+        if(month < 10) { month = '0' + month.toString(); }
+        if(day < 10) { day = '0' + day.toString(); }
+        
+        var maxDate = year + '-' + month + '-' + day;
+
+        datePickerDeparture.setAttribute('min', maxDate);
 
         datePickerDeparture.value = value.split(' ').join('T');
 
@@ -488,6 +534,34 @@ function replacementNumberPaginations(el) {
     }
 
     el.id = 'pagActive';
+}
+
+function sorting () {
+    if (sort === 'ASC') { sort = 'DESC'; uniCodeIconSort = '\u2193'; }
+    else if (sort === 'DESC') { sort = 'ASC'; uniCodeIconSort = '\u2191'; }
+
+    resetDomElements(document.getElementById('table'));
+    startApp(false);
+}
+
+function changeFilter (e) {
+    let field = e.options[e.selectedIndex].value;
+    searchData.field = field;
+}
+
+function search () {
+    var searchInp = document.getElementById('searchInp');
+
+    if (!searchData.field) {
+        showValidMessage('Select the search field');
+        return;
+    }
+
+    searchData.searchText = searchInp.value;
+
+    resetDomElements(document.getElementById('table'));
+    startApp(false);
+    
 }
 
 startApp();

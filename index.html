@@ -5,14 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Transportation</title>
+    <link rel="shortcut icon" type="image/x-icon" href="assets/logo.png">
 
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="libs/toast.css">
 </head>
 <body>
     <div id="wrapper">
-        
+        <div class="header">
         <button class="add_new" onclick="addTransportation()">Add new transportation</button>
+
+        <div class="form-search">
+            <select id="filterList" onchange="changeFilter(this)" >
+                <option></option>
+                <option value="brand">Brand auto</option>
+                <option value="model">Model Auto</option>
+                <option value="maximum_weight">Max weight</option>
+                <option value="first_name">Driver name</option>
+                <option value="last_name">Driver surname</option>
+                <option value="c_first_name">Customer name</option>
+                <option value="c_last_name">Customer surname</option>
+                <option value="transportation_from">Transportation from</option>
+                <option value="transportation_to">Transportation to</option>
+                <option value="price">Price</option>
+            </select>
+            <input type="text" placeholder="search" id="searchInp">
+            <button id="btn-search" onclick="search()">Search</button>
+        </div>
+
         <table border="1" width="100%" cellpadding="5" id="table"></table>
 
         <!-- modal window -->
